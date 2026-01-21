@@ -1,0 +1,32 @@
+{
+  "name": "pr",
+  "version": "1.0.0",
+  "description": "AI-powered GitHub PR creation MCP server for Cursor, Claude Desktop, Windsurf, etc.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "pr": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "cursor",
+    "claude",
+    "github",
+    "pr",
+    "pull-request",
+    "ai",
+    "windsurf",
+    "continue"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
