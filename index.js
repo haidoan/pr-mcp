@@ -70,8 +70,8 @@ function loadRepoConfig(cwd) {
 
 function execGit(command, cwd) {
   try {
-    return execSync(command, { 
-      encoding: "utf-8", 
+    return execSync(command, {
+      encoding: "utf-8",
       cwd,
       maxBuffer: 10 * 1024 * 1024,
       stdio: ['pipe', 'pipe', 'pipe']
@@ -112,7 +112,7 @@ function getGitContext(cwd, targetBranch = "develop") {
   const commits = execGit(`git log ${resolvedTarget}..HEAD --oneline`, gitRoot);
   const commitMessages = execGit(`git log ${resolvedTarget}..HEAD --pretty=format:"### %s%n%b"`, gitRoot);
   const diffStat = execGit(`git diff ${resolvedTarget} --stat`, gitRoot);
-  
+
   // Get diff with size limit
   let diff = execGit(`git diff ${resolvedTarget}`, gitRoot) || "";
   const maxDiffSize = 80000;
@@ -141,27 +141,35 @@ function extractTicket(branchName, pattern = "[A-Za-z]+-[0-9]+") {
   return match ? match[0].toUpperCase() : null;
 }
 
+function formatCommitChecklist(commits) {
+  if (!commits) return "";
+  return commits.split("\n")
+    .filter(Boolean)
+    .map(line => `- [ ] ${line}`)
+    .join("\n");
+}
+
 function generateTitle(branchName, repoConfig = {}) {
   const ticket = extractTicket(branchName, repoConfig.ticketPattern);
-  
+
   // Remove common prefixes
   let desc = branchName
     .replace(/^(feature|fix|hotfix|bugfix|chore|refactor|docs|test|ci)s?\//i, "");
-  
+
   // Remove ticket from description
   if (ticket) {
     desc = desc.replace(new RegExp(`${ticket}-?`, "i"), "");
   }
-  
+
   // Clean up
   desc = desc.replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
-  
+
   // Build title
   let title = "";
   if (repoConfig.titlePrefix) title += repoConfig.titlePrefix + " ";
   if (ticket) title += `[${ticket}] `;
   title += desc || "Pull Request";
-  
+
   return title;
 }
 
@@ -298,6 +306,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      {
+        name: "update_pr",
+        description: "Update an existing GitHub Pull Request. Can update title, description, and reviewers.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            pr_number: {
+              type: "string",
+              description: "PR number to update, or omit to update PR for current branch",
+            },
+            title: {
+              type: "string",
+              description: "New PR title",
+            },
+            description: {
+              type: "string",
+              description: "New PR description/body",
+            },
+            reviewers: {
+              type: "string",
+              description: "Comma-separated GitHub usernames to add as reviewers",
+            },
+            working_directory: {
+              type: "string",
+              description: "Working directory path",
+            },
+          },
+        },
+      },
     ],
   };
 });
@@ -407,6 +444,8 @@ ${repoConfig.customPrompt}
 `;
         }
 
+        const commitChecklist = formatCommitChecklist(ctx.commits);
+
         prompt += `
 ---
 
@@ -419,6 +458,9 @@ ${repoConfig.customPrompt}
 - [Key change 1]
 - [Key change 2]
 - [Key change 3]
+
+## Commits
+${commitChecklist}
 
 ## Testing
 - [ ] [How to test]
@@ -441,14 +483,14 @@ Be concise and specific. Focus on WHAT changed and WHY.`;
 
         // Generate title if not provided
         const title = args?.title || generateTitle(ctx.currentBranch, repoConfig || {});
-        
+
         // Get reviewers from args or repo config
         const reviewers = args?.reviewers || repoConfig?.reviewers?.join(",") || "";
         const draft = args?.draft || repoConfig?.draft || false;
 
         // Push branch
         try {
-          execSync(`git push -u origin ${ctx.currentBranch}`, { 
+          execSync(`git push -u origin ${ctx.currentBranch}`, {
             cwd: ctx.gitRoot,
             stdio: 'pipe'
           });
@@ -578,6 +620,48 @@ ${JSON.stringify(repoConfig, null, 2)}
 - Draft by Default: ${repoConfig.draft || false}
 - Custom Prompt: ${repoConfig.customPrompt || "none"}
 - Excluded Files: ${repoConfig.excludeFiles?.join(", ") || "none"}`,
+          }],
+        };
+      }
+
+      //-----------------------------------------------------------------------
+      case "update_pr": {
+        const gitRoot = findGitRoot(cwd);
+        if (!gitRoot) throw new Error("Not in a git repository");
+
+        // Get PR number - either from args or find by current branch
+        let prNumber = args?.pr_number;
+        if (!prNumber) {
+          const currentBranch = execGit("git branch --show-current", gitRoot);
+          const prList = execSync(`gh pr list --head ${currentBranch} --json number --limit 1`, {
+            cwd: gitRoot,
+            encoding: "utf-8"
+          });
+          const prs = JSON.parse(prList);
+          if (!prs.length) throw new Error(`No PR found for branch '${currentBranch}'`);
+          prNumber = prs[0].number;
+        }
+
+        // Build gh pr edit command
+        const editArgs = ["pr", "edit", prNumber];
+        if (args?.title) editArgs.push("--title", args.title);
+        if (args?.description) editArgs.push("--body", args.description);
+        if (args?.reviewers) editArgs.push("--add-reviewer", args.reviewers);
+
+        if (editArgs.length === 3) {
+          throw new Error("No updates specified (provide title, description, or reviewers)");
+        }
+
+        execSync(`gh ${editArgs.map(a => `"${a.replace(/"/g, '\\"')}"`).join(" ")}`, {
+          cwd: gitRoot,
+          encoding: "utf-8",
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
+
+        return {
+          content: [{
+            type: "text",
+            text: `✅ PR #${prNumber} updated successfully.`,
           }],
         };
       }
