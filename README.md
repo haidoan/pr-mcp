@@ -195,24 +195,6 @@ The MCP server automatically reads this and applies:
 5. Server uses `gh` CLI to create PR
 6. You get the PR URL
 
-## Comparison: CLI vs MCP
-
-| Aspect | CLI (`pr-ai`) | MCP Server |
-|--------|---------------|------------|
-| Usage | Run command in terminal | Ask AI in IDE |
-| AI Provider | Claude/Gemini/OpenAI API | Your IDE's AI |
-| API Key | Required | Not needed (uses IDE) |
-| Integration | Manual | Seamless |
-| Best For | Terminal users | IDE users |
-
-## Troubleshooting
-
-### "Tool not found" in Cursor
-
-1. Check MCP config path is correct
-2. Restart Cursor completely
-3. Check Cursor's MCP logs
-
 ### "Not in a git repository"
 
 Make sure you have a file open from a git repository, or specify `working_directory`.
