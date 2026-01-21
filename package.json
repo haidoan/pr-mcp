@@ -1,14 +1,14 @@
 {
-  "name": "pr",
+  "name": "pr-ai-mcp",
   "version": "1.0.0",
   "description": "AI-powered GitHub PR creation MCP server for Cursor, Claude Desktop, Windsurf, etc.",
   "type": "module",
-  "main": "src/index.js",
+  "main": "index.js",
   "bin": {
-    "pr": "./src/index.js"
+    "pr-ai-mcp": "./index.js"
   },
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node index.js"
   },
   "keywords": [
     "mcp",
