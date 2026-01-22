@@ -1,4 +1,4 @@
-# PR AI - MCP Server
+# PR MCP
 
 > AI-powered GitHub PR creation for **Cursor**, **Claude Desktop**, **Windsurf**, and other MCP-compatible editors.
 
@@ -18,12 +18,12 @@ No copy/paste. No switching windows. Just ask.
 
 ```bash
 # Clone and install
-git clone https://github.com/USER/pr-ai-mcp.git
-cd pr-ai-mcp
+git clone https://github.com/USER/pr-mcp.git
+cd pr-mcp
 npm install
 
 # Or install globally
-npm install -g pr-ai-mcp
+npm install -g pr-mcp
 ```
 
 ## Setup for Cursor
@@ -33,9 +33,9 @@ Add to your Cursor MCP config (`~/.cursor/mcp.json` or project `.cursor/mcp.json
 ```json
 {
   "mcpServers": {
-    "pr-ai": {
+    "pr-mcp": {
       "command": "node",
-      "args": ["/path/to/pr-ai-mcp/src/index.js"]
+      "args": ["/path/to/pr-mcp/index.js"]
     }
   }
 }
@@ -46,9 +46,9 @@ Or if installed globally via npm:
 ```json
 {
   "mcpServers": {
-    "pr-ai": {
+    "pr-mcp": {
       "command": "npx",
-      "args": ["pr-ai-mcp"]
+      "args": ["pr-mcp"]
     }
   }
 }
@@ -67,9 +67,9 @@ Add to Claude Desktop config:
 ```json
 {
   "mcpServers": {
-    "pr-ai": {
+    "pr-mcp": {
       "command": "node",
-      "args": ["/path/to/pr-ai-mcp/src/index.js"]
+      "args": ["/path/to/pr-mcp/index.js"]
     }
   }
 }
@@ -79,7 +79,7 @@ Add to Claude Desktop config:
 
 Most MCP-compatible editors use similar config. Add the server with:
 - Command: `node` (or `npx`)
-- Args: path to `src/index.js` (or `pr-ai-mcp` if installed via npm)
+- Args: path to `index.js` (or `pr-mcp` if installed via npm)
 
 ## Available Tools
 
@@ -89,7 +89,7 @@ Most MCP-compatible editors use similar config. Add the server with:
 | `generate_pr_description` | Get context for AI to generate PR description |
 | `create_pr` | Create the GitHub PR |
 | `preview_pr` | Preview PR without creating |
-| `get_repo_config` | Show .pr-ai.json settings |
+| `get_repo_config` | Show .pr-mcp.json settings |
 
 ## Usage Examples
 
@@ -144,7 +144,7 @@ AI: [calls analyze_changes]
 
 ## Per-Repo Configuration (Optional)
 
-Create `.pr-ai.json` in your repo root:
+Create `.pr-mcp.json` in your repo root:
 
 ```json
 {
@@ -178,7 +178,7 @@ The MCP server automatically reads this and applies:
          │ MCP Protocol
          ▼
 ┌─────────────────┐
-│  PR AI Server   │
+│  PR MCP Server  │
 │  (this tool)    │
 └────────┬────────┘
          │ Git + GitHub CLI
@@ -219,4 +219,3 @@ gh pr create --help
 ## License
 
 MIT
-# pr-mcp
