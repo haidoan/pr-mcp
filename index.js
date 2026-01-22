@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * PR AI - MCP Server
+ * PR MCP Server
  * 
  * Provides AI-powered GitHub PR creation tools via MCP protocol.
  * Works with: Cursor, Claude Desktop, Windsurf, Continue, etc.
@@ -27,7 +27,7 @@ import os from "os";
 const VERSION = "1.0.0";
 
 // Config paths
-const CONFIG_DIR = path.join(os.homedir(), ".pr-ai");
+const CONFIG_DIR = path.join(os.homedir(), ".pr-mcp");
 const CONFIG_FILE = path.join(CONFIG_DIR, "mcp-config.json");
 
 //=============================================================================
@@ -53,7 +53,7 @@ function saveConfig(config) {
 }
 
 function loadRepoConfig(cwd) {
-  const configPath = path.join(cwd, ".pr-ai.json");
+  const configPath = path.join(cwd, ".pr-mcp.json");
   try {
     if (fs.existsSync(configPath)) {
       return JSON.parse(fs.readFileSync(configPath, "utf-8"));
@@ -178,7 +178,7 @@ function generateTitle(branchName, repoConfig = {}) {
 //=============================================================================
 
 const server = new Server(
-  { name: "pr-ai", version: VERSION },
+  { name: "pr-mcp", version: VERSION },
   { capabilities: { tools: {} } }
 );
 
@@ -295,7 +295,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get_repo_config",
-        description: "Get the PR AI configuration for the current repository (.pr-ai.json). Returns reviewers, target branch, custom prompts, etc.",
+        description: "Get the PR MCP configuration for the current repository (.pr-mcp.json). Returns reviewers, target branch, custom prompts, etc.",
         inputSchema: {
           type: "object",
           properties: {
@@ -386,7 +386,7 @@ ${ctx.commitMessages || "No commit messages"}
 `;
 
         if (repoConfig) {
-          response += `\n### Repo Config (.pr-ai.json)
+          response += `\n### Repo Config (.pr-mcp.json)
 - Reviewers: ${repoConfig.reviewers?.join(", ") || "none"}
 - Target: ${repoConfig.targetBranch || "develop"}
 - Custom Prompt: ${repoConfig.customPrompt || "none"}
@@ -587,9 +587,9 @@ Use **create_pr** tool to create this PR.`;
           return {
             content: [{
               type: "text",
-              text: `No .pr-ai.json found in ${gitRoot}
+              text: `No .pr-mcp.json found in ${gitRoot}
 
-This is optional. To create one, add a .pr-ai.json file:
+This is optional. To create one, add a .pr-mcp.json file:
 
 \`\`\`json
 {
@@ -608,7 +608,7 @@ This is optional. To create one, add a .pr-ai.json file:
             type: "text",
             text: `## Repo Config
 
-**File:** ${path.join(gitRoot, ".pr-ai.json")}
+**File:** ${path.join(gitRoot, ".pr-mcp.json")}
 
 \`\`\`json
 ${JSON.stringify(repoConfig, null, 2)}
@@ -688,7 +688,7 @@ ${JSON.stringify(repoConfig, null, 2)}
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(`PR AI MCP Server v${VERSION} running...`);
+  console.error(`PR MCP Server v${VERSION} running...`);
 }
 
 main().catch(console.error);
